@@ -5,14 +5,15 @@ import { defineConfig, devices } from '@playwright/test'
  */
 export default defineConfig({
   testDir: './tests',
-  /* Run tests in files in parallel */
-  fullyParallel: true,
+  /* 테스트가 하나의 Supabase DB를 공유하므로("총 N개" 검증 등) 직렬로 실행한다 */
+  fullyParallel: false,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
+  workers: 1,
+  /* 목록 로드가 Server Action → Supabase 왕복이라 기본 5초보다 오래 걸릴 수 있다 */
+  expect: { timeout: 15_000 },
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: [
     ['html'],

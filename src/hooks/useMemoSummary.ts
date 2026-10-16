@@ -61,15 +61,21 @@ export function useMemoSummary(memo: Memo | null) {
     if (requestedKey !== memoKey) {
       let isLookupStale = false
       setState({ status: 'idle', summary: '' })
-      getMemoSummary(id).then(stored => {
-        if (isLookupStale) return
-        if (stored) {
-          summaryCache.set(id, { updatedAt, summary: stored })
-          setState({ status: 'success', summary: stored })
-        } else {
-          setState({ status: 'ready', summary: '' })
-        }
-      })
+      getMemoSummary(id)
+        .catch((error: unknown) => {
+          // 조회 실패는 저장된 요약이 없는 것으로 보고 요약하기 버튼을 보여 준다
+          console.error('저장된 요약 조회 실패:', error)
+          return null
+        })
+        .then(stored => {
+          if (isLookupStale) return
+          if (stored) {
+            summaryCache.set(id, { updatedAt, summary: stored })
+            setState({ status: 'success', summary: stored })
+          } else {
+            setState({ status: 'ready', summary: '' })
+          }
+        })
       return () => {
         isLookupStale = true
       }
